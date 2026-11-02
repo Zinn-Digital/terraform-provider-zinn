@@ -167,6 +167,13 @@ func (c *Client) Domains(ctx context.Context) ([]Domain, error) {
 	})
 }
 
+// Domain reads one domain (its `fqdn` is the zone a relative record name is resolved in).
+func (c *Client) Domain(ctx context.Context, domainID string) (*Domain, error) {
+	var out Domain
+	err := c.Do(ctx, http.MethodGet, "/v1/domains/"+url.PathEscape(domainID), nil, nil, &out)
+	return &out, err
+}
+
 // DNSRecords lists a domain's records.
 func (c *Client) DNSRecords(ctx context.Context, domainID string) ([]DnsRecord, error) {
 	path := "/v1/domains/" + url.PathEscape(domainID) + "/dns/records"

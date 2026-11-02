@@ -42,6 +42,8 @@ func (f *fakeAPI) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		io.WriteString(w, `{"data":[{"id":"p1","code":"agency_start","name":"Start","product_line":"agency","plan_version_id":"v1","plan_version":1,"recommended":true,"sort_order":1,"prices":[],"entitlements":{}}]}`)
+	case r.URL.Path == "/v1/domains/dom-1":
+		io.WriteString(w, `{"id":"dom-1","fqdn":"a.example","status":"active","ownership_mode":"external","auto_renew":false,"nameservers":[]}`)
 	case r.URL.Path == "/v1/domains":
 		if r.URL.Query().Get("cursor") == "" {
 			io.WriteString(w, `{"data":[{"id":"dom-1","fqdn":"a.example","status":"active","ownership_mode":"external","auto_renew":false,"nameservers":["ns1.example"]}],"page":{"has_more":true,"next_cursor":"c2"}}`)
@@ -67,6 +69,20 @@ func (f *fakeAPI) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 		if body["ttl"] == nil {
 			body["ttl"] = 300
+		}
+		// Shaped like the live API (measured 2026-11-01): the name comes back fully qualified and
+		// a host value without its trailing dot.
+		name, _ := body["name"].(string)
+		switch {
+		case name == "@" || name == "":
+			body["name"] = "a.example"
+		case !strings.HasSuffix(strings.TrimSuffix(name, "."), "a.example"):
+			body["name"] = name + ".a.example"
+		default:
+			body["name"] = strings.TrimSuffix(name, ".")
+		}
+		if body["type"] == "CNAME" {
+			body["value"] = strings.TrimSuffix(body["value"].(string), ".")
 		}
 		body["id"], body["owner"] = id, "customer"
 		f.records[id] = body
@@ -164,7 +180,20 @@ resource "zinn_dns_record" "www" {
 				resource.TestCheckResourceAttr("zinn_dns_record.www", "id", "rec-1"),
 				resource.TestCheckResourceAttr("zinn_dns_record.www", "value", "192.0.2.2"),
 			)},
-			{ResourceName: "zinn_dns_record.www", ImportState: true, ImportStateVerify: true, ImportStateId: "dom-1/rec-1"},
+			// An import has no configuration to keep, so it holds the API's fully-qualified name.
+			{ResourceName: "zinn_dns_record.www", ImportState: true, ImportStateVerify: true, ImportStateId: "dom-1/rec-1", ImportStateVerifyIgnore: []string{"name"}},
+			// A CNAME at the apex with an absolute, dotted target: both come back respelled.
+			{Config: cfg("192.0.2.2") + `
+resource "zinn_dns_record" "apex" {
+  domain_id = "dom-1"
+  name      = "@"
+  type      = "CNAME"
+  value     = "target.example.net."
+}`, Check: resource.ComposeAggregateTestCheckFunc(
+				resource.TestCheckResourceAttr("zinn_dns_record.apex", "name", "@"),
+				resource.TestCheckResourceAttr("zinn_dns_record.apex", "value", "target.example.net."),
+				resource.TestCheckResourceAttr("zinn_dns_record.www", "name", "www"),
+			)},
 		},
 		CheckDestroy: func(_ *terraformState) error {
 			if len(api.records) != 0 {

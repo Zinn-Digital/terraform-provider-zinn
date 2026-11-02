@@ -56,12 +56,14 @@ type Site struct {
 	FailedActivity        *string         `json:"failed_activity,omitempty"`
 	FailedStep            *string         `json:"failed_step,omitempty"`
 	ID                    string          `json:"id"`
+	Install               json.RawMessage `json:"install,omitempty"`
 	Name                  *string         `json:"name,omitempty"`
 	OrgID                 string          `json:"org_id"`
 	PanelConnectionID     *string         `json:"panel_connection_id,omitempty"`
 	PhpVersion            *string         `json:"php_version,omitempty"`
 	PlanCode              *string         `json:"plan_code,omitempty"`
 	PlanName              *string         `json:"plan_name,omitempty"`
+	PreviewOnly           *bool           `json:"preview_only,omitempty"`
 	PrimaryDomain         string          `json:"primary_domain"`
 	ProductLine           string          `json:"product_line"`
 	ProviderRefusal       json.RawMessage `json:"provider_refusal,omitempty"`
@@ -95,6 +97,7 @@ type Domain struct {
 	ID              string   `json:"id"`
 	Nameservers     []string `json:"nameservers"`
 	OrgID           string   `json:"org_id"`
+	OriginServed    *bool    `json:"origin_served,omitempty"`
 	OwnershipMode   string   `json:"ownership_mode"`
 	PrivacyEnabled  *bool    `json:"privacy_enabled,omitempty"`
 	ProductLine     *string  `json:"product_line,omitempty"`

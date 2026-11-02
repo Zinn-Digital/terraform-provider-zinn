@@ -17,7 +17,9 @@ func (b *base) Configure(_ context.Context, req datasource.ConfigureRequest, res
 	b.client = clientFrom(req.ProviderData, &resp.Diagnostics)
 }
 
-func str(d string) schema.StringAttribute { return schema.StringAttribute{Computed: true, MarkdownDescription: d} }
+func str(d string) schema.StringAttribute {
+	return schema.StringAttribute{Computed: true, MarkdownDescription: d}
+}
 
 // ---- zinn_regions -------------------------------------------------------------------------------
 

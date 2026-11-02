@@ -81,11 +81,20 @@ func toWrite(m dnsRecordModel) zinnapi.DnsRecordWrite {
 
 // fromAPI copies the server's view into the model. Optional inputs the user left unset stay
 // null, so a server default never shows up as a perpetual diff.
-func fromAPI(m *dnsRecordModel, rec *zinnapi.DnsRecord) {
+//
+// ⛔ The API answers with the record's FULL name (`www` comes back `www.example.com`) and a
+// host value without its trailing dot. 0.1.1308 copied those over the configured values and
+// every apply failed with "Provider produced inconsistent result" (measured live 2026-11-01
+// on a TEST-org domain). The configured spelling is kept whenever it names the same record.
+func fromAPI(m *dnsRecordModel, rec *zinnapi.DnsRecord, zone string) {
 	m.ID = types.StringValue(rec.ID)
-	m.Name = types.StringValue(rec.Name)
+	if m.Name.IsNull() || m.Name.IsUnknown() || recordFQDN(m.Name.ValueString(), zone) != recordFQDN(rec.Name, zone) {
+		m.Name = types.StringValue(rec.Name)
+	}
 	m.Type = types.StringValue(rec.Type)
-	m.Value = types.StringValue(rec.Value)
+	if m.Value.IsNull() || m.Value.IsUnknown() || !sameValue(rec.Type, m.Value.ValueString(), rec.Value) {
+		m.Value = types.StringValue(rec.Value)
+	}
 	m.TTL = types.Int64Value(rec.TTL)
 	m.Owner = types.StringValue(rec.Owner)
 	if !m.Priority.IsNull() || rec.Priority != nil {
@@ -94,6 +103,46 @@ func fromAPI(m *dnsRecordModel, rec *zinnapi.DnsRecord) {
 	if !m.Proxied.IsNull() {
 		m.Proxied = boolPtr(rec.Proxied)
 	}
+}
+
+// recordFQDN resolves `@`, a relative name or an absolute one (with or without the trailing
+// dot) to the one spelling the API returns.
+func recordFQDN(name, zone string) string {
+	n := strings.ToLower(strings.TrimSuffix(strings.TrimSpace(name), "."))
+	z := strings.ToLower(strings.TrimSuffix(zone, "."))
+	switch {
+	case z == "":
+		return n
+	case n == "" || n == "@" || n == z:
+		return z
+	case strings.HasSuffix(n, "."+z):
+		return n
+	default:
+		return n + "." + z
+	}
+}
+
+// sameValue: host-valued types compare without the trailing dot and case; TXT without quotes.
+func sameValue(recordType, configured, server string) bool {
+	if configured == server {
+		return true
+	}
+	switch strings.ToUpper(recordType) {
+	case "CNAME", "MX", "NS", "PTR", "SRV", "ALIAS", "ANAME":
+		return strings.EqualFold(strings.TrimSuffix(configured, "."), strings.TrimSuffix(server, "."))
+	case "TXT":
+		return strings.Trim(configured, `"`) == strings.Trim(server, `"`)
+	}
+	return false
+}
+
+// zone is the domain's fqdn; an error leaves names compared literally rather than failing.
+func (r *dnsRecordResource) zone(ctx context.Context, domainID string) string {
+	d, err := r.client.Domain(ctx, domainID)
+	if err != nil || d == nil {
+		return ""
+	}
+	return d.Fqdn
 }
 
 func (r *dnsRecordResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -107,7 +156,7 @@ func (r *dnsRecordResource) Create(ctx context.Context, req resource.CreateReque
 		resp.Diagnostics.AddError("Creating DNS record failed", err.Error())
 		return
 	}
-	fromAPI(&plan, rec)
+	fromAPI(&plan, rec, r.zone(ctx, plan.DomainID.ValueString()))
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -126,7 +175,7 @@ func (r *dnsRecordResource) Read(ctx context.Context, req resource.ReadRequest, 
 		resp.Diagnostics.AddError("Reading DNS record failed", err.Error())
 		return
 	}
-	fromAPI(&state, rec)
+	fromAPI(&state, rec, r.zone(ctx, state.DomainID.ValueString()))
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
@@ -142,7 +191,7 @@ func (r *dnsRecordResource) Update(ctx context.Context, req resource.UpdateReque
 		resp.Diagnostics.AddError("Updating DNS record failed", err.Error())
 		return
 	}
-	fromAPI(&plan, rec)
+	fromAPI(&plan, rec, r.zone(ctx, plan.DomainID.ValueString()))
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
