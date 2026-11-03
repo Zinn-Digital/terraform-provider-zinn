@@ -50,6 +50,7 @@ type Site struct {
 	DeletionState         *string         `json:"deletion_state,omitempty"`
 	DeployTarget          *string         `json:"deploy_target,omitempty"`
 	Disk                  json.RawMessage `json:"disk"`
+	DnsNotPointed         *bool           `json:"dns_not_pointed,omitempty"`
 	DnsVendor             *string         `json:"dns_vendor,omitempty"`
 	DomainPointing        json.RawMessage `json:"domain_pointing,omitempty"`
 	EnforcementError      *string         `json:"enforcement_error,omitempty"`
