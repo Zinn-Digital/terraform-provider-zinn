@@ -61,6 +61,7 @@ type Site struct {
 	Name                  *string         `json:"name,omitempty"`
 	OrgID                 string          `json:"org_id"`
 	PanelConnectionID     *string         `json:"panel_connection_id,omitempty"`
+	ParentSiteID          *string         `json:"parent_site_id,omitempty"`
 	PhpVersion            *string         `json:"php_version,omitempty"`
 	PlanCode              *string         `json:"plan_code,omitempty"`
 	PlanName              *string         `json:"plan_name,omitempty"`
