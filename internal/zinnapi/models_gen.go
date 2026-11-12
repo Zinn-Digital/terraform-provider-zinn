@@ -90,28 +90,30 @@ type SitePage struct {
 
 // Domain is the Domain component schema.
 type Domain struct {
-	AutoRenew       bool     `json:"auto_renew"`
-	CreatedAt       string   `json:"created_at"`
-	DelegationState *string  `json:"delegation_state,omitempty"`
-	DnssecEnabled   *bool    `json:"dnssec_enabled,omitempty"`
-	ExpiresAt       *string  `json:"expires_at,omitempty"`
-	Fqdn            string   `json:"fqdn"`
-	ID              string   `json:"id"`
-	Nameservers     []string `json:"nameservers"`
-	OrgID           string   `json:"org_id"`
-	OriginServed    *bool    `json:"origin_served,omitempty"`
-	OwnershipMode   string   `json:"ownership_mode"`
-	PrivacyEnabled  *bool    `json:"privacy_enabled,omitempty"`
-	ProductLine     *string  `json:"product_line,omitempty"`
-	RegisteredAt    *string  `json:"registered_at,omitempty"`
-	RegistrarLock   *bool    `json:"registrar_lock,omitempty"`
-	RenewYears      int64    `json:"renew_years"`
-	SiteID          *string  `json:"site_id,omitempty"`
-	SiteServes      *bool    `json:"site_serves,omitempty"`
-	Sld             string   `json:"sld"`
-	Status          string   `json:"status"`
-	Tld             string   `json:"tld"`
-	UpdatedAt       *string  `json:"updated_at,omitempty"`
+	AttachState         *string  `json:"attach_state,omitempty"`
+	AutoRenew           bool     `json:"auto_renew"`
+	CreatedAt           string   `json:"created_at"`
+	DelegationState     *string  `json:"delegation_state,omitempty"`
+	DnssecEnabled       *bool    `json:"dnssec_enabled,omitempty"`
+	ExpiresAt           *string  `json:"expires_at,omitempty"`
+	Fqdn                string   `json:"fqdn"`
+	ID                  string   `json:"id"`
+	Nameservers         []string `json:"nameservers"`
+	ObservedNameservers []string `json:"observed_nameservers,omitempty"`
+	OrgID               string   `json:"org_id"`
+	OriginServed        *bool    `json:"origin_served,omitempty"`
+	OwnershipMode       string   `json:"ownership_mode"`
+	PrivacyEnabled      *bool    `json:"privacy_enabled,omitempty"`
+	ProductLine         *string  `json:"product_line,omitempty"`
+	RegisteredAt        *string  `json:"registered_at,omitempty"`
+	RegistrarLock       *bool    `json:"registrar_lock,omitempty"`
+	RenewYears          int64    `json:"renew_years"`
+	SiteID              *string  `json:"site_id,omitempty"`
+	SiteServes          *bool    `json:"site_serves,omitempty"`
+	Sld                 string   `json:"sld"`
+	Status              string   `json:"status"`
+	Tld                 string   `json:"tld"`
+	UpdatedAt           *string  `json:"updated_at,omitempty"`
 }
 
 // DomainPage is the DomainPage component schema.
