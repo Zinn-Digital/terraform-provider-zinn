@@ -58,6 +58,7 @@ type Site struct {
 	FailedStep            *string         `json:"failed_step,omitempty"`
 	ID                    string          `json:"id"`
 	Install               json.RawMessage `json:"install,omitempty"`
+	MigrationHold         *string         `json:"migration_hold,omitempty"`
 	Name                  *string         `json:"name,omitempty"`
 	OrgID                 string          `json:"org_id"`
 	PanelConnectionID     *string         `json:"panel_connection_id,omitempty"`
