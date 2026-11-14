@@ -148,6 +148,7 @@ type DnsRecordWrite struct {
 // DnsRecordList is the DnsRecordList component schema.
 type DnsRecordList struct {
 	Data           []DnsRecord `json:"data"`
+	Hosted         *bool       `json:"hosted,omitempty"`
 	Page           PageMeta    `json:"page"`
 	SupportedTypes []string    `json:"supported_types,omitempty"`
 }
