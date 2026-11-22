@@ -45,6 +45,7 @@ type CatalogPlanList struct {
 type Site struct {
 	BlueprintID           *string         `json:"blueprint_id,omitempty"`
 	CdnVendor             *string         `json:"cdn_vendor,omitempty"`
+	ComputeServerID       *string         `json:"compute_server_id,omitempty"`
 	CreatedAt             string          `json:"created_at"`
 	DeletionScheduledFor  *string         `json:"deletion_scheduled_for,omitempty"`
 	DeletionState         *string         `json:"deletion_state,omitempty"`
