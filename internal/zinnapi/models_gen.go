@@ -29,6 +29,7 @@ type CatalogPlan struct {
 	Orderable         *bool           `json:"orderable,omitempty"`
 	PlanVersion       int64           `json:"plan_version"`
 	PlanVersionID     string          `json:"plan_version_id"`
+	PriceMap          json.RawMessage `json:"price_map,omitempty"`
 	Prices            json.RawMessage `json:"prices"`
 	ProductLine       string          `json:"product_line"`
 	Recommended       bool            `json:"recommended"`
